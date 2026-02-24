@@ -23,63 +23,44 @@ Please reply with EXACTLY one of the following words and nothing else:
       generationConfig: { temperature: 0.1, maxOutputTokens: 10 }
     })
   },
-  openai: {
-    name: 'OpenAI',
-    url: (key) => `https://api.openai.com/v1/chat/completions`,
+  minimax: {
+    name: 'MiniMax',
+    url: (key) => `https://api.minimax.chat/v1/text/chatcompletion_v2?GroupId=${key.split(':')[0]}&Authorization=Bearer ${key.split(':')[1] || ''}`,
     prompt: (text, hasVideo) => `
-You are an AI filtering assistant for a user's X (Twitter) timeline.
-Classify if this tweet is HIDE (shitpost/ragebait/engagement bait/ads), AD (advertisement), or KEEP (genuinely useful content).
-
-Tweet: "${text}"
-Has video: ${hasVideo ? 'YES' : 'NO'}
-
-Reply with exactly one word: HIDE, AD, or KEEP
-    `.trim(),
-    body: (prompt) => JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 10
-    })
-  },
-  anthropic: {
-    name: 'Anthropic Claude',
-    url: (key) => `https://api.anthropic.com/v1/messages`,
-    prompt: (text, hasVideo) => `
-You are an AI filtering assistant for a user's X (Twitter) timeline.
-Classify if this tweet is HIDE (shitpost/ragebait/engagement bait/ads), AD (advertisement), or KEEP (genuinely useful content).
-
-Tweet: "${text}"
-Has video: ${hasVideo ? 'YES' : 'NO'}
-
-Reply with exactly one word: HIDE, AD, or KEEP
-    `.trim(),
-    body: (prompt) => JSON.stringify({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 10,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  },
-  groq: {
-    name: 'Groq',
-    url: (key) => `https://api.groq.com/openai/v1/chat/completions`,
-    prompt: (text, hasVideo) => `
-You are an AI filtering assistant for X (Twitter).
 Classify this tweet: HIDE (shitpost/ragebait/engagement bait/ads), AD (advertisement), or KEEP (useful content).
 
 Tweet: "${text}"
-Video: ${hasVideo ? 'YES' : 'NO'}
+Has video: ${hasVideo ? 'YES' : 'NO'}
 
 Reply: HIDE, AD, or KEEP
     `.trim(),
+    body: (prompt, key) => {
+      const groupId = key.split(':')[0] || '';
+      return JSON.stringify({
+        model: 'abab6.5s-chat',
+        messages: [{ role: 'user', content: prompt }]
+      });
+    }
+  },
+  opencode: {
+    name: 'OpenCode',
+    url: () => `https://opencode.ai/api/v1/generate`,
+    prompt: (text, hasVideo) => `
+Classify this tweet: HIDE (shitpost/ragebait/engagement bait/ads), AD (advertisement), or KEEP (useful content).
+
+Tweet: "${text}"
+Has video: ${hasVideo ? 'YES' : 'NO'}
+
+Reply with exactly one word: HIDE, AD, or KEEP
+    `.trim(),
     body: (prompt) => JSON.stringify({
-      model: 'llama-3.1-70b-versatile',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 10
+      prompt: prompt,
+      model: 'opencode'
     })
   },
   custom: {
     name: 'Custom',
-    url: (key, endpoint) => endpoint,
+    url: (key, endpoint) => endpoint || '',
     prompt: (text, hasVideo) => `
 Classify this tweet: HIDE (shitpost/ragebait/engagement bait/ads), AD (advertisement), or KEEP (useful content).
 
@@ -116,27 +97,18 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 });
 
 async function analyzeTweetWithAI(text, hasVideo) {
-  if (!apiKey) return 'PASS';
+  if (!apiKey && apiProvider !== 'opencode') return 'PASS';
   if (!text || text.trim().length < 5) return 'PASS';
 
   const config = API_CONFIGS[apiProvider] || API_CONFIGS.gemini;
   const endpoint = apiProvider === 'custom' ? customEndpoint : config.url(apiKey);
   const prompt = config.prompt(text, hasVideo);
-  const body = config.body(prompt);
+  const body = config.body(prompt, apiKey);
 
   try {
     const headers = {
       'Content-Type': 'application/json'
     };
-
-    if (apiProvider === 'openai') {
-      headers['Authorization'] = `Bearer ${apiKey}`;
-    } else if (apiProvider === 'anthropic') {
-      headers['x-api-key'] = apiKey;
-      headers['anthropic-version'] = '2023-06-01';
-    } else if (apiProvider === 'groq') {
-      headers['Authorization'] = `Bearer ${apiKey}`;
-    }
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -154,10 +126,10 @@ async function analyzeTweetWithAI(text, hasVideo) {
 
     if (apiProvider === 'gemini') {
       resultText = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase();
-    } else if (apiProvider === 'openai' || apiProvider === 'groq') {
+    } else if (apiProvider === 'minimax') {
       resultText = data?.choices?.[0]?.message?.content?.trim().toUpperCase();
-    } else if (apiProvider === 'anthropic') {
-      resultText = data?.content?.[0]?.text?.trim().toUpperCase();
+    } else if (apiProvider === 'opencode') {
+      resultText = data?.completion?.trim().toUpperCase() || '';
     } else if (apiProvider === 'custom') {
       resultText = data?.choices?.[0]?.message?.content?.trim().toUpperCase() || data?.text || '';
     }
@@ -193,17 +165,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === 'testApiKey') {
     const config = API_CONFIGS[message.provider] || API_CONFIGS.gemini;
     const endpoint = message.provider === 'custom' ? message.endpoint : config.url(message.apiKey);
-    const body = config.body('Reply OK');
+    const body = config.body('Reply OK', message.apiKey);
 
-    const headers = { 'Content-Type': 'application/json' };
-    if (message.provider === 'openai' || message.provider === 'groq') {
-      headers['Authorization'] = `Bearer ${message.apiKey}`;
-    } else if (message.provider === 'anthropic') {
-      headers['x-api-key'] = message.apiKey;
-      headers['anthropic-version'] = '2023-06-01';
-    }
-
-    fetch(endpoint, { method: 'POST', headers, body })
+    fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
       .then(res => sendResponse({ success: res.ok }))
       .catch(() => sendResponse({ success: false }));
     return true;
