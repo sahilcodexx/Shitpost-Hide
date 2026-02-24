@@ -3,86 +3,120 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tweet-Noise-Canceler</title>
+  <title>Tweet-Noise</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="popup-container">
-    <header class="header">
-      <div class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-          <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <h1>Tweet-Noise-Canceler</h1>
+  <div class="popup">
+    <div class="popup-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z"/>
+            <path d="M2 17L12 22L22 17"/>
+            <path d="M2 12L12 17L22 12"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Tweet-Noise</h1>
+          <span class="version">v1.0</span>
+        </div>
       </div>
-    </header>
+      <div class="status-badge" id="statusBadge">
+        <span class="status-dot"></span>
+        <span class="status-text">Active</span>
+      </div>
+    </div>
 
-    <main class="main-content">
-      <section class="toggle-section">
-        <div class="toggle-label">
-          <span class="toggle-title">Filter Noise</span>
-          <span class="toggle-description">Hide shitposts, rageposts & nonsense</span>
+    <div class="popup-content">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-info">
+            <h2>Filtering</h2>
+            <p>Hide shitposts, ragebait & reach-farming</p>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="enableToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
         </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="enableToggle" checked>
-          <span class="slider"></span>
-        </label>
-      </section>
+      </div>
 
-      <section class="stats-section">
+      <div class="section stats-section">
         <div class="stat-card">
-          <span class="stat-number" id="hiddenCount">0</span>
-          <span class="stat-label">Posts Hidden</span>
+          <div class="stat-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-number" id="hiddenCount">0</span>
+            <span class="stat-label">hidden</span>
+          </div>
         </div>
-        <button class="reset-btn" id="resetBtn" title="Reset counter">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C9.17157 3 6.68629 4.34315 5.12132 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M3 4V8H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <button class="btn-icon" id="resetBtn" title="Reset counter">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
           </svg>
         </button>
-      </section>
+      </div>
 
-      <section class="blacklist-section">
-        <h2>Custom Keywords</h2>
-        <p class="blacklist-description">Add keywords to hide tweets containing these terms</p>
-        <textarea id="blacklistInput" placeholder="Enter keywords (one per line)&#10;Example:&#10;buy crypto&#10;follow for follow" rows="4"></textarea>
-        <button class="save-btn" id="saveBlacklist">Save Keywords</button>
-      </section>
+      <div class="section">
+        <div class="section-header">
+          <h2>Custom Keywords</h2>
+        </div>
+        <textarea id="blacklistInput" class="input" placeholder="Enter keywords (one per line)&#10;crypto, follow for follow, etc."></textarea>
+        <button class="btn btn-default" id="saveBlacklist">Save Keywords</button>
+      </div>
 
-      <section class="ai-section">
-        <h2>AI Integration</h2>
-        <p class="blacklist-description">Select free AI provider (no payment required)</p>
-        <select id="apiProvider" class="api-select">
-          <option value="gemini">Google Gemini (Free)</option>
-          <option value="minimax">MiniMax (Free)</option>
-          <option value="opencode">OpenCode (Free)</option>
-          <option value="custom">Custom</option>
+      <div class="section">
+        <div class="section-header">
+          <h2>AI Provider</h2>
+          <span class="badge-free">FREE</span>
+        </div>
+        
+        <select id="apiProvider" class="input select">
+          <option value="gemini">Google Gemini</option>
+          <option value="openrouter">OpenRouter</option>
+          <option value="minimax">MiniMax</option>
+          <option value="opencode">OpenCode</option>
+          <option value="custom">Custom Endpoint</option>
         </select>
-        <input type="password" id="geminiApiKeyInput" placeholder="Enter API Key" />
-        <input type="text" id="apiEndpoint" placeholder="Custom API Endpoint URL (if Custom)" style="display:none;" />
+        
+        <input type="password" id="geminiApiKeyInput" class="input" placeholder="Enter API Key">
+        
+        <input type="text" id="apiEndpoint" class="input" placeholder="https://api.example.com/v1/chat" style="display: none;">
+        
         <div class="btn-row">
-          <button class="save-btn" id="saveApiKey">Save API Key</button>
-          <button class="save-btn secondary" id="testApiKey">Test</button>
+          <button class="btn btn-primary" id="saveApiKey">Save</button>
+          <button class="btn btn-outline" id="testApiKey">Test</button>
         </div>
-        <p id="apiTestResult"></p>
-      </section>
+        
+        <div class="api-result" id="apiTestResult"></div>
+      </div>
 
-      <section class="info-section">
-        <div class="info-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="currentColor"/></svg>
-          <span>All providers are FREE - no payment needed</span>
+      <div class="features">
+        <div class="feature-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <path d="M22 4L12 14.01l-3-3"/>
+          </svg>
+          <span>No payment required</span>
         </div>
-        <div class="info-item">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg>
-          <span>Preserves: tech links, code, verified orgs</span>
+        <div class="feature-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <path d="M22 4L12 14.01l-3-3"/>
+          </svg>
+          <span>Preserves tech & news</span>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
 
-    <footer class="footer">
-      <span>v1.0.0</span>
-    </footer>
+    <div class="popup-footer">
+      <span>Clean your timeline</span>
+    </div>
   </div>
   <script src="popup.js"></script>
 </body>

@@ -58,8 +58,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     hiddenCount = 0;
     await saveState();
     hiddenCountEl.textContent = '0';
-    hiddenCountEl.classList.add('pulse');
-    setTimeout(() => hiddenCountEl.classList.remove('pulse'), 300);
+    hiddenCountEl.style.transform = 'scale(1.2)';
+    setTimeout(() => hiddenCountEl.style.transform = 'scale(1)', 150);
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tab?.id) {
@@ -72,11 +72,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     customBlacklist = blacklistInput.value.split('\n').map(k => k.trim()).filter(k => k.length > 0);
     await saveState();
     saveBlacklistBtn.textContent = 'Saved!';
-    saveBlacklistBtn.classList.add('success');
+    saveBlacklistBtn.style.opacity = '0.8';
     setTimeout(() => {
       saveBlacklistBtn.textContent = 'Save Keywords';
-      saveBlacklistBtn.classList.remove('success');
-    }, 1500);
+      saveBlacklistBtn.style.opacity = '1';
+    }, 1200);
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tab?.id) {
@@ -85,17 +85,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {}
   });
 
+  apiProvider.addEventListener('change', () => {
+    selectedProvider = apiProvider.value;
+    apiEndpoint.style.display = selectedProvider === 'custom' ? 'block' : 'none';
+    saveState();
+    try {
+      chrome.runtime.sendMessage({ 
+        action: 'updateApiConfig', 
+        apiKey: geminiApiKey,
+        provider: selectedProvider,
+        endpoint: customEndpoint
+      });
+    } catch (error) {}
+  });
+
+  apiEndpoint.addEventListener('input', () => {
+    customEndpoint = apiEndpoint.value.trim();
+    saveState();
+  });
+
   saveApiKeyBtn.addEventListener('click', async () => {
     geminiApiKey = geminiApiKeyInput.value.trim();
     selectedProvider = apiProvider.value;
     customEndpoint = apiEndpoint.value.trim();
     await saveState();
     saveApiKeyBtn.textContent = 'Saved!';
-    saveApiKeyBtn.classList.add('success');
+    saveApiKeyBtn.style.opacity = '0.8';
     setTimeout(() => {
-      saveApiKeyBtn.textContent = 'Save API Key';
-      saveApiKeyBtn.classList.remove('success');
-    }, 1500);
+      saveApiKeyBtn.textContent = 'Save';
+      saveApiKeyBtn.style.opacity = '1';
+    }, 1200);
     try {
       chrome.runtime.sendMessage({ 
         action: 'updateApiConfig', 
@@ -112,15 +131,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const endpoint = apiEndpoint.value.trim();
     
     if (!keyToTest) {
-      apiTestResult.textContent = 'Please enter an API key first.';
-      apiTestResult.style.color = '#f4212e';
+      apiTestResult.className = 'api-status error';
+      apiTestResult.textContent = 'Enter an API key first';
       return;
     }
 
     testApiKeyBtn.textContent = 'Testing...';
     testApiKeyBtn.disabled = true;
+    apiTestResult.className = 'api-status';
     apiTestResult.textContent = 'Testing...';
-    apiTestResult.style.color = '#8b98a5';
 
     try {
       const response = await chrome.runtime.sendMessage({ 
@@ -129,21 +148,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         provider: provider,
         endpoint: endpoint
       });
-      testApiKeyBtn.textContent = 'Test';
+      testApiKeyBtn.textContent = 'Test Key';
       testApiKeyBtn.disabled = false;
 
       if (response && response.success) {
+        apiTestResult.className = 'api-status success';
         apiTestResult.textContent = 'API Key is working!';
-        apiTestResult.style.color = '#00ba7c';
       } else {
-        apiTestResult.textContent = 'Invalid API Key or network error.';
-        apiTestResult.style.color = '#f4212e';
+        const errorMsg = response?.error ? response.error.slice(0, 80) : 'Invalid key';
+        apiTestResult.className = 'api-status error';
+        apiTestResult.textContent = 'Error: ' + errorMsg;
       }
     } catch (error) {
-      testApiKeyBtn.textContent = 'Test';
+      testApiKeyBtn.textContent = 'Test Key';
       testApiKeyBtn.disabled = false;
-      apiTestResult.textContent = 'Invalid API Key or network error.';
-      apiTestResult.style.color = '#f4212e';
+      apiTestResult.className = 'api-status error';
+      apiTestResult.textContent = 'Error: ' + error.message;
     }
   });
 
@@ -164,23 +184,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await loadState();
   startCountPolling();
-
-  apiProvider.addEventListener('change', () => {
-    selectedProvider = apiProvider.value;
-    apiEndpoint.style.display = selectedProvider === 'custom' ? 'block' : 'none';
-    saveState();
-    try {
-      chrome.runtime.sendMessage({ 
-        action: 'updateApiConfig', 
-        apiKey: geminiApiKey,
-        provider: selectedProvider,
-        endpoint: customEndpoint
-      });
-    } catch (error) {}
-  });
-
-  apiEndpoint.addEventListener('input', () => {
-    customEndpoint = apiEndpoint.value.trim();
-    saveState();
-  });
 });

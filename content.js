@@ -25,17 +25,96 @@
     'ragebait',
     'engagement bait',
     'clout',
-    'ratio'
+    'ratio',
+    'follow for follow',
+    'like and follow',
+    'retweet if',
+    'tag someone who',
+    'who else',
+    'real talk',
+    'unpopular opinion',
+    'hot take',
+    'i hate',
+    'can we get',
+    'drop a',
+    'reply with',
+    'tell me',
+    'honestly tho',
+    'no cap',
+    'fr fr',
+    'not me',
+    'me when',
+    'POV:',
+    'day in the life',
+    'what i ate',
+    'routine',
+    'grwm',
+    'storytime',
+    'let me explain',
+    'break the internet',
+    'go viral',
+    'this is your sign',
+    'manifesting',
+    'affirmations',
+    'law of attraction',
+    'reels',
+    'fyp',
+    'foryou',
+    'trending',
+    'pov',
+    'relatable',
+    'screenshot this',
+    'save this',
+    'bookmark',
+    'share this',
+    'exposed',
+    'leaked',
+    'truth about',
+    'they don\'t want you to know',
+    'stop scrolling',
+    'before you leave',
+    'wait for it',
+    'plot twist',
+    'omg',
+    'literally me',
+    'girls understand',
+    'boys will understand',
+    'parent problems',
+    'teacher problems',
+    'adulting',
+    'when you realize',
+    'never do this',
+    'stop doing this',
+    'why i quit',
+    'i left',
+    'canceled',
+    'drama',
+    'tea',
+    'spill the tea',
+    'update',
+    'breaking',
+    'news',
+    'just in',
+    'happening now',
+    'reaction',
+    'react to',
+    'watch till end',
+    'dont forget',
+    'reminder',
+    'pin comment'
   ];
 
   const TECH_LINKS = [
     'github.com', 'dev.to', 'stackoverflow.com', 'medium.com', 'docs.',
     '.io/', 'gitlab.com', 'bitbucket.org', 'npmjs.com', 'pypi.org',
     'crates.io', 'golang.org', 'python.org', 'reactjs.org', 'vuejs.org',
-    'svelte.dev', 'nextjs.org', 'typescriptlang.org'
+    'svelte.dev', 'nextjs.org', 'typescriptlang.org', 'reddit.com/r/',
+    'hackernews', 'news.ycombinator'
   ];
 
-  const CODE_INDICATORS = ['```', '`', 'function ', 'const ', 'let ', 'var ', 'class ', 'import ', 'export ', 'def ', 'async ', 'await '];
+  const CODE_INDICATORS = ['```', '`', 'function ', 'const ', 'let ', 'var ', 'class ', 'import ', 'export ', 'def ', 'async ', 'await ', 'public ', 'private ', 'return ', 'if (', 'for (', 'while '];
+
+  const VIDEO_INDICATORS = ['video', 'reel', 'tiktok', 'youtube', 'watch'];
 
   async function loadState() {
     try {
@@ -96,36 +175,79 @@
       const accountName = article.querySelector('[data-testid="User-Name"]');
       if (accountName) {
         const text = accountName.textContent.toLowerCase();
-        const orgIndicators = ['inc', 'llc', 'ltd', 'corp', 'co.', 'company', 'official', 'technologies', 'labs', 'official'];
+        const orgIndicators = ['inc', 'llc', 'ltd', 'corp', 'co.', 'company', 'official', 'technologies', 'labs', 'official', 'news', 'media', 'journal'];
         return orgIndicators.some(org => text.includes(org));
       }
     }
     return false;
   }
 
+  function hasOnlyEmojis(text) {
+    const emojiPattern = /^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{1F1E0}-\u{1F1FF}]+$/u;
+    return emojiPattern.test(text.trim());
+  }
+
   function containsEngagementBait(text) {
     const lowerText = text.toLowerCase();
+    
     for (const pattern of ENGAGEMENT_BAIT_PATTERNS) {
       if (lowerText.includes(pattern.toLowerCase())) return true;
     }
+    
     for (const keyword of customBlacklist) {
       if (keyword.trim() && lowerText.includes(keyword.toLowerCase().trim())) return true;
     }
+    
     return false;
   }
 
-  function isLowEffortTweet(article, text) {
+  function isLowQualityContent(article, text) {
     const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
-    let hasImage = false;
-    const images = article.querySelectorAll('img[src]');
-    for (const img of images) {
-      if (img.src.includes('profile') || img.src.includes('emoji')) continue;
-      const style = window.getComputedStyle(img);
-      if (style.width && parseInt(style.width) < 50) continue;
-      hasImage = true;
-      break;
+    const charCount = text.length;
+    
+    const hasImage = article.querySelector('img[src]') !== null;
+    const hasVideo = article.querySelector('video') !== null;
+    const hasGif = article.querySelector('img[src*="gif"]') !== null;
+    
+    if (hasOnlyEmojis(text) && (hasImage || hasVideo || hasGif)) return true;
+    
+    if (wordCount <= 3 && (hasImage || hasVideo)) return true;
+    
+    if (charCount <= 20 && (hasImage || hasVideo || hasGif)) return true;
+    
+    const linkText = text.toLowerCase();
+    if ((linkText.includes('link in bio') || linkText.includes('link in comments') || linkText.includes('click the')) && hasImage) return true;
+    
+    if (hasVideo && !hasImage && wordCount <= 10) return true;
+    
+    const memePatterns = ['💀', '😭', '🤣', '🔥', '🤡💯', '', '👀', '🙃', '😤', '😩', '🤯'];
+    const emojiCount = memePatterns.filter(e => text.includes(e)).length;
+    if (emojiCount >= 3 && wordCount <= 15) return true;
+    
+    return false;
+  }
+
+  function isViralBait(article, text) {
+    const lowerText = text.toLowerCase();
+    
+    const viralPhrases = [
+      'go viral', 'broke the internet', 'trending', 'everyone talking',
+      'this is crazy', 'you won\'t believe', 'shocking', 'mind blown',
+      'life hack', 'game changer', 'stop what you\'re doing', 'emergency',
+      'must watch', 'breaking news', 'just dropped', 'announcement'
+    ];
+    
+    for (const phrase of viralPhrases) {
+      if (lowerText.includes(phrase)) return true;
     }
-    if (wordCount < 20 && hasImage) return true;
+    
+    const hasPoll = article.querySelector('[data-testid="poll"]') !== null;
+    const hasMultipleImages = article.querySelectorAll('img[src*="photo"]').length >= 2;
+    
+    if (hasPoll && text.split(/\s+/).length <= 20) return true;
+    
+    if (hasMultipleImages && text.split(/\s+/).length <= 10) return true;
+    
     return false;
   }
 
@@ -148,10 +270,25 @@
       if (spanText === 'Ad' || spanText === 'Promoted') return true;
     }
 
+    if (containsEngagementBait(text)) {
+      console.log('[Tweet-Noise-Canceler] Hiding - engagement bait pattern');
+      return true;
+    }
+
+    if (isLowQualityContent(article, text)) {
+      console.log('[Tweet-Noise-Canceler] Hiding - low quality content');
+      return true;
+    }
+
+    if (isViralBait(article, text)) {
+      console.log('[Tweet-Noise-Canceler] Hiding - viral bait');
+      return true;
+    }
+
     try {
       const aiResponse = await new Promise(resolve => {
         chrome.runtime.sendMessage({
-          action: 'analyzeTweet',
+          action: 'analyzeTweetAggressive',
           text: text,
           hasVideo: hasVideo
         }, response => resolve(response));
@@ -163,11 +300,8 @@
         if (aiResponse.classification === 'KEEP') return false;
       }
     } catch (error) {
-      console.log('[Tweet-Noise-Canceler] AI Error or context invalidated');
+      console.log('[Tweet-Noise-Canceler] AI Error:', error.message);
     }
-
-    if (containsEngagementBait(text)) return true;
-    if (await isLowEffortTweet(article, text)) return true;
 
     return false;
   }
@@ -178,8 +312,8 @@
     const hiddenDiv = document.createElement('div');
     hiddenDiv.className = 'noise-canceler-hidden';
     hiddenDiv.innerHTML = `
-      <div style="padding: 16px; border-bottom: 1px solid var(--border-color, #38444d); background: #1a1a1a; display: flex; align-items: center; justify-content: center;">
-        <span style="font-size: 16px; font-weight: bold; color: #666; font-family: monospace; letter-spacing: 2px;">faaahhhh</span>
+      <div style="padding: 16px; border-bottom: 1px solid #38444d; background: #0f0f0f; display: flex; align-items: center; justify-content: center;">
+        <span style="font-size: 18px; font-weight: bold; color: #666; font-family: monospace; letter-spacing: 3px;">faaahhhh</span>
       </div>
     `;
 
@@ -243,7 +377,7 @@
   }
 
   async function init() {
-    console.log('[Tweet-Noise-Canceler] Initializing...');
+    console.log('[Tweet-Noise-Canceler] Initializing - AGGRESSIVE MODE');
     await loadState();
 
     setTimeout(() => {
