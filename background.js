@@ -12,7 +12,7 @@ const API_CONFIGS = {
   openrouter: {
     url: (key) => `https://openrouter.ai/api/v1/chat/completions`,
     body: (p) => JSON.stringify({ model: 'google/gemini-2.0-flash-001', messages: [{ role: 'user', content: p }], max_tokens: 10 }),
-    headers: (key) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}`, 'HTTP-Referer': 'https://twitter.com', 'X-Title': 'Tweet-Noise' }),
+    headers: (key) => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}`, 'HTTP-Referer': 'https://twitter.com', 'X-Title': 'X-Clean' }),
     parse: (d) => d?.choices?.[0]?.message?.content?.trim().toUpperCase() || ''
   },
   minimax: {
@@ -45,7 +45,7 @@ chrome.storage.local.get(['geminiApiKey', 'apiProvider', 'customEndpoint'], (r) 
 
 chrome.runtime.onInstalled.addListener(async (d) => {
   if (d.reason === 'install') {
-    await chrome.storage.local.set({ isEnabled: true, hiddenCount: 0, customBlacklist: [], geminiApiKey: '', apiProvider: 'gemini', customEndpoint: '' });
+    await chrome.storage.local.set({ isEnabled: true, hideUI: true, hiddenCount: 0, customBlacklist: [], geminiApiKey: '', apiProvider: 'gemini', customEndpoint: '' });
   }
 });
 
@@ -74,7 +74,7 @@ async function analyzeTweet(text, hasVideo) {
 
 chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
   if (msg.action === 'log') {
-    console.log('[Tweet-Noise]', msg.data);
+    console.log('[X-Clean]', msg.data);
     sendResponse({ success: true });
   } else if (msg.action === 'updateApiConfig') {
     apiKey = msg.apiKey;

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Tweet-Noise",
+  "name": "X-Clean",
   "version": "1.0.0",
-  "description": "Filter out shitposts, rageposts and nonsense from Twitter using AI",
+  "description": "Clean Twitter/X from shitposts, ragebait and nonsense",
   "permissions": [
     "storage",
     "activeTab",

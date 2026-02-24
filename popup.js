@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const $ = id => document.getElementById(id);
   const els = {
     enableToggle: $('enableToggle'),
+    uiToggle: $('uiToggle'),
     hiddenCount: $('hiddenCount'),
     resetBtn: $('resetBtn'),
     blacklistInput: $('blacklistInput'),
@@ -14,16 +15,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     apiTestResult: $('apiTestResult')
   };
 
-  let state = { isEnabled: true, hiddenCount: 0, customBlacklist: [], apiKey: '', provider: 'gemini', endpoint: '' };
+  let state = { isEnabled: true, hideUI: true, hiddenCount: 0, customBlacklist: [], apiKey: '', provider: 'gemini', endpoint: '' };
 
   async function load() {
-    const r = await chrome.storage.local.get(['isEnabled', 'hiddenCount', 'customBlacklist', 'geminiApiKey', 'apiProvider', 'customEndpoint']);
-    state = { isEnabled: r.isEnabled !== false, hiddenCount: r.hiddenCount || 0, customBlacklist: r.customBlacklist || [], apiKey: r.geminiApiKey || '', provider: r.apiProvider || 'gemini', endpoint: r.customEndpoint || '' };
+    const r = await chrome.storage.local.get(['isEnabled', 'hiddenCount', 'customBlacklist', 'geminiApiKey', 'apiProvider', 'customEndpoint', 'hideUI']);
+    state = { 
+      isEnabled: r.isEnabled !== false, 
+      hideUI: r.hideUI !== false,
+      hiddenCount: r.hiddenCount || 0, 
+      customBlacklist: r.customBlacklist || [], 
+      apiKey: r.geminiApiKey || '', 
+      provider: r.apiProvider || 'gemini', 
+      endpoint: r.customEndpoint || '' 
+    };
     updateUI();
   }
 
   function updateUI() {
     els.enableToggle.checked = state.isEnabled;
+    els.uiToggle && (els.uiToggle.checked = state.hideUI);
     els.hiddenCount.textContent = state.hiddenCount;
     els.blacklistInput.value = state.customBlacklist.join('\n');
     els.apiKeyInput.value = state.apiKey;
@@ -43,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function save() {
-    await chrome.storage.local.set({ isEnabled: state.isEnabled, hiddenCount: state.hiddenCount, customBlacklist: state.customBlacklist, geminiApiKey: state.apiKey, apiProvider: state.provider, customEndpoint: state.endpoint });
+    await chrome.storage.local.set({ isEnabled: state.isEnabled, hideUI: state.hideUI, hiddenCount: state.hiddenCount, customBlacklist: state.customBlacklist, geminiApiKey: state.apiKey, apiProvider: state.provider, customEndpoint: state.endpoint });
   }
 
   els.enableToggle.onchange = async () => {
@@ -53,6 +63,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       tab?.id && chrome.tabs.sendMessage(tab.id, { action: 'toggleEnabled', enabled: state.isEnabled });
+    } catch (e) {}
+  };
+
+  els.uiToggle.onchange = async () => {
+    state.hideUI = els.uiToggle.checked;
+    await save();
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      tab?.id && chrome.tabs.sendMessage(tab.id, { action: 'toggleUI', enabled: state.hideUI });
     } catch (e) {}
   };
 
