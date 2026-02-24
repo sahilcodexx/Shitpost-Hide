@@ -1,187 +1,144 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  const enableToggle = document.getElementById('enableToggle');
-  const hiddenCountEl = document.getElementById('hiddenCount');
-  const resetBtn = document.getElementById('resetBtn');
-  const blacklistInput = document.getElementById('blacklistInput');
-  const saveBlacklistBtn = document.getElementById('saveBlacklist');
-  const geminiApiKeyInput = document.getElementById('geminiApiKeyInput');
-  const saveApiKeyBtn = document.getElementById('saveApiKey');
-  const testApiKeyBtn = document.getElementById('testApiKey');
-  const apiTestResult = document.getElementById('apiTestResult');
-  const apiProvider = document.getElementById('apiProvider');
-  const apiEndpoint = document.getElementById('apiEndpoint');
+  const $ = id => document.getElementById(id);
+  const els = {
+    enableToggle: $('enableToggle'),
+    hiddenCount: $('hiddenCount'),
+    resetBtn: $('resetBtn'),
+    blacklistInput: $('blacklistInput'),
+    saveBlacklist: $('saveBlacklist'),
+    apiProvider: $('apiProvider'),
+    apiKeyInput: $('geminiApiKeyInput'),
+    apiEndpoint: $('apiEndpoint'),
+    saveApiKey: $('saveApiKey'),
+    testApiKey: $('testApiKey'),
+    apiTestResult: $('apiTestResult')
+  };
 
-  let isEnabled = true;
-  let hiddenCount = 0;
-  let customBlacklist = [];
-  let geminiApiKey = '';
-  let selectedProvider = 'gemini';
-  let customEndpoint = '';
+  let state = { isEnabled: true, hiddenCount: 0, customBlacklist: [], apiKey: '', provider: 'gemini', endpoint: '' };
 
-  async function loadState() {
-    const result = await chrome.storage.local.get(['isEnabled', 'hiddenCount', 'customBlacklist', 'geminiApiKey', 'apiProvider', 'customEndpoint']);
-    isEnabled = result.isEnabled !== undefined ? result.isEnabled : true;
-    hiddenCount = result.hiddenCount || 0;
-    customBlacklist = result.customBlacklist || [];
-    geminiApiKey = result.geminiApiKey || '';
-    selectedProvider = result.apiProvider || 'gemini';
-    customEndpoint = result.customEndpoint || '';
+  async function load() {
+    const r = await chrome.storage.local.get(['isEnabled', 'hiddenCount', 'customBlacklist', 'geminiApiKey', 'apiProvider', 'customEndpoint']);
+    state = { isEnabled: r.isEnabled !== false, hiddenCount: r.hiddenCount || 0, customBlacklist: r.customBlacklist || [], apiKey: r.geminiApiKey || '', provider: r.apiProvider || 'gemini', endpoint: r.customEndpoint || '' };
     updateUI();
   }
 
   function updateUI() {
-    enableToggle.checked = isEnabled;
-    hiddenCountEl.textContent = hiddenCount;
-    blacklistInput.value = customBlacklist.join('\n');
-    geminiApiKeyInput.value = geminiApiKey;
-    apiProvider.value = selectedProvider;
-    apiEndpoint.value = customEndpoint;
-    apiEndpoint.style.display = selectedProvider === 'custom' ? 'block' : 'none';
+    els.enableToggle.checked = state.isEnabled;
+    els.hiddenCount.textContent = state.hiddenCount;
+    els.blacklistInput.value = state.customBlacklist.join('\n');
+    els.apiKeyInput.value = state.apiKey;
+    els.apiProvider.value = state.provider;
+    els.apiEndpoint.value = state.endpoint;
+    els.apiEndpoint.style.display = state.provider === 'custom' ? 'block' : 'none';
+    updateStatusBadge(state.isEnabled);
   }
 
-  async function saveState() {
-    await chrome.storage.local.set({ isEnabled, hiddenCount, customBlacklist, geminiApiKey, apiProvider: selectedProvider, customEndpoint });
+  function updateStatusBadge(enabled) {
+    const badge = document.querySelector('.status-text');
+    const dot = document.querySelector('.status-dot');
+    if (badge && dot) {
+      badge.textContent = enabled ? 'Active' : 'Off';
+      dot.style.background = enabled ? '#fff' : '#737373';
+    }
   }
 
-  enableToggle.addEventListener('change', async () => {
-    isEnabled = enableToggle.checked;
-    await saveState();
+  async function save() {
+    await chrome.storage.local.set({ isEnabled: state.isEnabled, hiddenCount: state.hiddenCount, customBlacklist: state.customBlacklist, geminiApiKey: state.apiKey, apiProvider: state.provider, customEndpoint: state.endpoint });
+  }
+
+  els.enableToggle.onchange = async () => {
+    state.isEnabled = els.enableToggle.checked;
+    updateStatusBadge(state.isEnabled);
+    await save();
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab?.id) {
-        await chrome.tabs.sendMessage(tab.id, { action: 'toggleEnabled', enabled: isEnabled });
-      }
-    } catch (error) {}
-  });
+      tab?.id && chrome.tabs.sendMessage(tab.id, { action: 'toggleEnabled', enabled: state.isEnabled });
+    } catch (e) {}
+  };
 
-  resetBtn.addEventListener('click', async () => {
-    hiddenCount = 0;
-    await saveState();
-    hiddenCountEl.textContent = '0';
-    hiddenCountEl.style.transform = 'scale(1.2)';
-    setTimeout(() => hiddenCountEl.style.transform = 'scale(1)', 150);
+  els.resetBtn.onclick = async () => {
+    state.hiddenCount = 0;
+    els.hiddenCount.textContent = '0';
+    els.hiddenCount.style.transform = 'scale(1.15)';
+    setTimeout(() => els.hiddenCount.style.transform = 'scale(1)', 120);
+    await save();
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab?.id) {
-        await chrome.tabs.sendMessage(tab.id, { action: 'resetCount' });
-      }
-    } catch (error) {}
-  });
+      tab?.id && chrome.tabs.sendMessage(tab.id, { action: 'resetCount' });
+    } catch (e) {}
+  };
 
-  saveBlacklistBtn.addEventListener('click', async () => {
-    customBlacklist = blacklistInput.value.split('\n').map(k => k.trim()).filter(k => k.length > 0);
-    await saveState();
-    saveBlacklistBtn.textContent = 'Saved!';
-    saveBlacklistBtn.style.opacity = '0.8';
-    setTimeout(() => {
-      saveBlacklistBtn.textContent = 'Save Keywords';
-      saveBlacklistBtn.style.opacity = '1';
-    }, 1200);
+  els.saveBlacklist.onclick = async () => {
+    state.customBlacklist = els.blacklistInput.value.split('\n').map(k => k.trim()).filter(k => k);
+    await save();
+    els.saveBlacklist.textContent = 'Saved!';
+    setTimeout(() => els.saveBlacklist.textContent = 'Save Keywords', 1000);
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab?.id) {
-        await chrome.tabs.sendMessage(tab.id, { action: 'updateBlacklist', blacklist: customBlacklist });
-      }
-    } catch (error) {}
-  });
+      tab?.id && chrome.tabs.sendMessage(tab.id, { action: 'updateBlacklist', blacklist: state.customBlacklist });
+    } catch (e) {}
+  };
 
-  apiProvider.addEventListener('change', () => {
-    selectedProvider = apiProvider.value;
-    apiEndpoint.style.display = selectedProvider === 'custom' ? 'block' : 'none';
-    saveState();
-    try {
-      chrome.runtime.sendMessage({ 
-        action: 'updateApiConfig', 
-        apiKey: geminiApiKey,
-        provider: selectedProvider,
-        endpoint: customEndpoint
-      });
-    } catch (error) {}
-  });
+  els.apiProvider.onchange = () => {
+    state.provider = els.apiProvider.value;
+    els.apiEndpoint.style.display = state.provider === 'custom' ? 'block' : 'none';
+    save();
+    try { chrome.runtime.sendMessage({ action: 'updateApiConfig', apiKey: state.apiKey, provider: state.provider, endpoint: state.endpoint }); } catch (e) {}
+  };
 
-  apiEndpoint.addEventListener('input', () => {
-    customEndpoint = apiEndpoint.value.trim();
-    saveState();
-  });
+  els.apiEndpoint.oninput = () => {
+    state.endpoint = els.apiEndpoint.value.trim();
+    save();
+  };
 
-  saveApiKeyBtn.addEventListener('click', async () => {
-    geminiApiKey = geminiApiKeyInput.value.trim();
-    selectedProvider = apiProvider.value;
-    customEndpoint = apiEndpoint.value.trim();
-    await saveState();
-    saveApiKeyBtn.textContent = 'Saved!';
-    saveApiKeyBtn.style.opacity = '0.8';
-    setTimeout(() => {
-      saveApiKeyBtn.textContent = 'Save';
-      saveApiKeyBtn.style.opacity = '1';
-    }, 1200);
-    try {
-      chrome.runtime.sendMessage({ 
-        action: 'updateApiConfig', 
-        apiKey: geminiApiKey,
-        provider: selectedProvider,
-        endpoint: customEndpoint
-      });
-    } catch (error) {}
-  });
+  els.saveApiKey.onclick = async () => {
+    state.apiKey = els.apiKeyInput.value.trim();
+    state.provider = els.apiProvider.value;
+    state.endpoint = els.apiEndpoint.value.trim();
+    await save();
+    els.saveApiKey.textContent = 'Saved!';
+    setTimeout(() => els.saveApiKey.textContent = 'Save', 1000);
+    try { chrome.runtime.sendMessage({ action: 'updateApiConfig', apiKey: state.apiKey, provider: state.provider, endpoint: state.endpoint }); } catch (e) {}
+  };
 
-  testApiKeyBtn.addEventListener('click', async () => {
-    const keyToTest = geminiApiKeyInput.value.trim();
-    const provider = apiProvider.value;
-    const endpoint = apiEndpoint.value.trim();
+  els.testApiKey.onclick = async () => {
+    const key = els.apiKeyInput.value.trim();
+    if (!key) { showResult('Enter an API key first', 'error'); return; }
     
-    if (!keyToTest) {
-      apiTestResult.className = 'api-status error';
-      apiTestResult.textContent = 'Enter an API key first';
-      return;
-    }
-
-    testApiKeyBtn.textContent = 'Testing...';
-    testApiKeyBtn.disabled = true;
-    apiTestResult.className = 'api-status';
-    apiTestResult.textContent = 'Testing...';
+    els.testApiKey.textContent = 'Testing...';
+    els.testApiKey.disabled = true;
+    showResult('Testing...', '');
 
     try {
-      const response = await chrome.runtime.sendMessage({ 
-        action: 'testApiKey', 
-        apiKey: keyToTest,
-        provider: provider,
-        endpoint: endpoint
-      });
-      testApiKeyBtn.textContent = 'Test Key';
-      testApiKeyBtn.disabled = false;
-
-      if (response && response.success) {
-        apiTestResult.className = 'api-status success';
-        apiTestResult.textContent = 'API Key is working!';
-      } else {
-        const errorMsg = response?.error ? response.error.slice(0, 80) : 'Invalid key';
-        apiTestResult.className = 'api-status error';
-        apiTestResult.textContent = 'Error: ' + errorMsg;
-      }
-    } catch (error) {
-      testApiKeyBtn.textContent = 'Test Key';
-      testApiKeyBtn.disabled = false;
-      apiTestResult.className = 'api-status error';
-      apiTestResult.textContent = 'Error: ' + error.message;
+      const res = await chrome.runtime.sendMessage({ action: 'testApiKey', apiKey: key, provider: els.apiProvider.value, endpoint: els.apiEndpoint.value.trim() });
+      els.testApiKey.textContent = 'Test';
+      els.testApiKey.disabled = false;
+      if (res?.success) { showResult('API Key is working!', 'success'); }
+      else { showResult('Error: ' + (res?.error || 'Invalid key').slice(0, 60), 'error'); }
+    } catch (e) {
+      els.testApiKey.textContent = 'Test';
+      els.testApiKey.disabled = false;
+      showResult('Error: ' + e.message, 'error');
     }
-  });
+  };
 
-  async function startCountPolling() {
-    setInterval(async () => {
-      try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab?.id) {
-          const response = await chrome.tabs.sendMessage(tab.id, { action: 'getStats' });
-          if (response && response.hiddenCount !== undefined) {
-            hiddenCount = response.hiddenCount;
-            hiddenCountEl.textContent = hiddenCount;
-          }
-        }
-      } catch (error) {}
-    }, 2000);
+  function showResult(msg, type) {
+    els.apiTestResult.textContent = msg;
+    els.apiTestResult.className = 'api-result show ' + type;
   }
 
-  await loadState();
-  startCountPolling();
+  setInterval(async () => {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab?.id) {
+        const res = await chrome.tabs.sendMessage(tab.id, { action: 'getStats' });
+        if (res?.hiddenCount !== undefined) {
+          state.hiddenCount = res.hiddenCount;
+          els.hiddenCount.textContent = state.hiddenCount;
+        }
+      }
+    } catch (e) {}
+  }, 2000);
+
+  await load();
 });

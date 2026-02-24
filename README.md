@@ -1,214 +1,140 @@
-# Tweet-Noise Canceler
+# Tweet-Noise
 
-A Chrome extension that aggressively filters out shitposts, rageposts, engagement bait, and meaningless content from Twitter/X using AI. Shows "faaahhhh" instead of filtered posts.
+A Chrome extension that aggressively filters out shitposts, rageposts, engagement bait, and meaningless content from Twitter/X using AI.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-green)
 ![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-blue)
 
 ## Features
 
-### 🚀 Aggressive Content Filtering
-
-Automatically hides:
-- **Engagement Bait** - "follow for follow", "tag someone who", "drop a 🐸"
-- **Ragebait** - Content designed to anger/divide
-- **Low Quality Posts** - Short text + image only, emoji spam
-- **Viral Chase** - "go viral", "breaking", "you won't believe"
-- **Meme Spam** - Relatable memes with no substance
-- **POV/GRWM** - "Day in the life", "GRWM", "POV:"
-- **Reach Farming** - "link in bio", "DM for"
-- **Hot Takes** - Low-effort controversial opinions
-
-### 🛡️ Protected Content
-
-Preserves:
-- Technical/programming content
-- Code and documentation links
-- News from verified sources
-- Genuine conversations
-- Verified organization accounts
-
-### 🤖 Multiple Free AI Providers
-
-Supports these FREE APIs (no payment required):
-- **Google Gemini** - Recommended, generous free tier
-- **OpenRouter** - Free models available
-- **MiniMax** - Free Chinese AI
-- **OpenCode** - Free AI
-- **Custom Endpoint** - For any other API
+- 🚀 **Aggressive Filtering** - Blocks engagement bait, ragebait, viral chase, meme spam
+- 🤖 **AI Powered** - Uses free AI APIs for smart detection  
+- 💰 **100% Free** - No paid subscriptions, uses free-tier APIs
+- 🔒 **Privacy First** - Your API keys stay in your browser
+- 🎯 **Smart Whitelists** - Preserves tech, news, and verified accounts
 
 ## Installation
 
-### Prerequisites
-- Google Chrome, Brave, or any Chromium-based browser
+### Option 1: Direct Install (Recommended)
 
-### Steps
+1. **Download the extension:**
+   - Go to [GitHub Releases](https://github.com/YOUR_USERNAME/tweet-noise/releases) OR
+   - Click green "Code" button → "Download ZIP"
 
-1. **Clone or download** this repository
+2. **Extract the file:**
+   - Right-click the ZIP → "Extract All"
+   - Remember where you saved it!
 
-2. **Open Chrome Extensions**:
-   ```
-   chrome://extensions/
-   ```
+3. **Install in Chrome:**
+   - Open Chrome and go to: `chrome://extensions/`
+   - Turn on **Developer mode** (top right switch)
+   - Click **Load unpacked**
+   - Select the extracted folder
+   - Done! 🎉
 
-3. **Enable Developer Mode**:
-   - Toggle the switch in the top-right corner
+4. **Pin the extension:**
+   - Click puzzle piece icon in Chrome toolbar
+   - Click pin icon next to "Tweet-Noise"
 
-4. **Load the extension**:
-   - Click "Load unpacked"
-   - Select the `chrome-extension` folder
+### Option 2: Using Git
 
-5. **Pin the extension**:
-   - Click the puzzle piece icon in Chrome
-   - Pin "Tweet-Noise"
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/tweet-noise.git
 
-## Configuration
-
-### Getting a Free API Key
-
-#### Google Gemini (Recommended)
-1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Sign in with Google
-3. Click "Create API Key"
-4. Copy the key
-5. Paste in the extension popup
-
-#### OpenRouter
-1. Go to [OpenRouter Settings](https://openrouter.ai/settings)
-2. Create an account
-3. Go to "API Keys"
-4. Create a new key
-5. Copy and paste
-
-### Using the Extension
-
-1. Visit Twitter/X (twitter.com or x.com)
-2. Click the extension icon
-3. Select your AI provider
-4. Enter your free API key
-5. Click "Test" to verify
-6. Click "Save"
-7. Toggle filtering ON
-8. Scroll your timeline - garbage content is now replaced with "faaahhhh"
-
-## How It Works
-
-### Heuristic Filters (No AI Required)
-The extension first runs content through pattern matching:
-- Engagement bait phrases
-- Emoji-only posts
-- Short text + media
-- Viral chase keywords
-- Custom user keywords
-
-### AI Analysis (When API Key Provided)
-For deeper analysis, the AI:
-1. Receives tweet text
-2. Classifies as HIDE or KEEP
-3. Returns decision
-4. Extension hides/shows content
-
-### Visual Replacement
-Instead of just hiding posts, it shows:
-```
-┌─────────────────────────────┐
-│      faaahhhh              │
-└─────────────────────────────┘
+# Or download directly
+# https://github.com/YOUR_USERNAME/tweet-noise/archive/main.zip
 ```
 
-## File Structure
+Then follow step 3 above to load in Chrome.
 
-```
-chrome-extension/
-├── manifest.json          # Extension configuration
-├── content.js             # Tweet filtering logic
-├── background.js         # AI API handling
-├── popup.html            # Extension popup UI
-├── popup.js              # Popup interactions
-├── styles.css            # Modern dark UI
-└── README.md            # This file
-```
+## Setup Guide
 
-### manifest.json
-- Defines extension permissions
-- Lists host URLs for Twitter & APIs
-- Registers content scripts & popup
+### Step 1: Get a Free API Key
 
-### content.js
-- Observes Twitter DOM for new tweets
-- Applies heuristic filters
-- Sends text to AI for analysis
-- Replaces filtered content with "faaahhhh"
+The extension works without an API key using basic filters. For smarter AI detection, get a free key:
 
-### background.js
-- Handles all AI API calls
-- Supports multiple providers
-- Manages API key storage
-- Processes analysis requests
+| Provider | Link | Free Tier |
+|----------|------|-----------|
+| **Google Gemini** | [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) | 15 requests/min |
+| **OpenRouter** | [openrouter.ai/settings](https://openrouter.ai/settings) | Free credits |
 
-### popup.html/js/css
-- Toggle filtering on/off
-- Display hidden post count
-- Manage custom keywords
-- Configure AI provider & API key
+**Recommended: Google Gemini** - easiest to get, works great.
 
-## Supported Browsers
+### Step 2: Configure the Extension
 
-- Google Chrome
-- Microsoft Edge
-- Brave Browser
-- Opera
-- Any Chromium-based browser
+1. Click the Tweet-Noise icon in Chrome
+2. Select your AI provider from dropdown
+3. Paste your API key
+4. Click **Test** to verify it works
+5. Click **Save**
+6. Make sure toggle is ON
 
-## API Keys
+### Step 3: Enjoy Clean Timeline
 
-### Are API keys required?
-No! The extension works with heuristic filters alone. Adding an API key makes it smarter but isn't required.
+That's it! Visit Twitter/X and scroll. Garbage posts will be replaced with fun messages like:
+- 💀 not this again...
+- 🤡 reached another level
+- 📉 braincells dying
 
-### Is it really free?
-Yes! All supported providers have free tiers:
-- **Gemini**: 15 RPM free
-- **OpenRouter**: Free credits for new users
-- **MiniMax**: Free tier available
-- **OpenCode**: Free to use
+## How to Update
 
-### Privacy
-Your API keys are stored locally in your browser and only sent to the AI provider you choose. The extension never sees or stores your data.
+1. Download new version from GitHub
+2. Go to `chrome://extensions/`
+3. Click the refresh icon on Tweet-Noise
+4. Or remove and re-add (settings will be saved)
 
 ## Troubleshooting
 
-### Extension not loading
-1. Check `chrome://extensions/`
-2. Look for error messages
-3. Try reloading the extension
+**Extension not working?**
+- Refresh the Twitter page
+- Make sure toggle is ON in popup
+- Check if API key is saved
 
-### API key not working
-1. Click "Test" in the popup
-2. Check error message
-3. Ensure you copied the full key
-4. Try a different provider
+**API key not working?**
+- Click "Test" in popup
+- Make sure you copied the full key
+- Try a different provider
 
-### Tweets not being filtered
-1. Make sure toggle is ON
-2. Refresh the Twitter page
-3. Check if custom keywords are set
+**Tweets not filtering?**
+- Refresh the page
+- Check custom keywords aren't blocking everything
+- Make sure you're on twitter.com or x.com
 
-### Count not updating
-- The counter updates every 2 seconds
-- Refresh the page to sync
+## Supported Browsers
 
-## Contributing
+- Google Chrome ✅
+- Brave ✅
+- Edge ✅
+- Any Chromium browser ✅
 
-Pull requests are welcome! This is an open-source project aimed at making Twitter/X a better place.
+## Files
+
+```
+tweet-noise/
+├── manifest.json      # Extension config
+├── content.js         # Filters tweets
+├── background.js     # AI API handling
+├── popup.html        # Settings page
+├── popup.js          # Popup logic
+├── styles.css        # UI styling
+├── icons/            # Extension icons
+└── README.md         # This file
+```
+
+## Privacy
+
+- API keys are stored only in your browser's local storage
+- Keys are sent directly to AI providers, never through any server
+- No data collection or tracking
+- Open source - inspect the code yourself
 
 ## License
 
-MIT License - Feel free to use, modify, and distribute.
-
-## Credits
-
-Inspired by [ruturajbayad/no_more_shitposts](https://github.com/ruturajbayad/no_more_shitposts)
+MIT License - Free to use, modify, and share.
 
 ---
 
-Made with ❤️ for a cleaner internet
+**Made with ❤️ for a better Twitter experience**
+
+[GitHub](https://github.com/YOUR_USERNAME/tweet-noise) · [Report Bug](https://github.com/YOUR_USERNAME/tweet-noise/issues)
