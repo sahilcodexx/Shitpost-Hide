@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tweet-Noise-Canceler</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="header">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1>Tweet-Noise-Canceler</h1>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="toggle-section">
+        <div class="toggle-label">
+          <span class="toggle-title">Filter Noise</span>
+          <span class="toggle-description">Hide shitposts, rageposts & nonsense</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="enableToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </section>
+
+      <section class="stats-section">
+        <div class="stat-card">
+          <span class="stat-number" id="hiddenCount">0</span>
+          <span class="stat-label">Posts Hidden</span>
+        </div>
+        <button class="reset-btn" id="resetBtn" title="Reset counter">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M3 12C3 16.9706 7.02944 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C9.17157 3 6.68629 4.34315 5.12132 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M3 4V8H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </section>
+
+      <section class="blacklist-section">
+        <h2>Custom Keywords</h2>
+        <p class="blacklist-description">Add keywords to hide tweets containing these terms</p>
+        <textarea id="blacklistInput" placeholder="Enter keywords (one per line)&#10;Example:&#10;buy crypto&#10;follow for follow" rows="4"></textarea>
+        <button class="save-btn" id="saveBlacklist">Save Keywords</button>
+      </section>
+
+      <section class="ai-section">
+        <h2>Gemini AI Integration</h2>
+        <p class="blacklist-description">Enter your Gemini API Key for AI-powered filtering</p>
+        <input type="password" id="geminiApiKeyInput" placeholder="Enter Gemini API Key" />
+        <div class="btn-row">
+          <button class="save-btn" id="saveApiKey">Save API Key</button>
+          <button class="save-btn secondary" id="testApiKey">Test</button>
+        </div>
+        <p id="apiTestResult"></p>
+      </section>
+
+      <section class="info-section">
+        <div class="info-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="currentColor"/></svg>
+          <span>Hides: shitposts, ragebait, engagement farming</span>
+        </div>
+        <div class="info-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg>
+          <span>Preserves: tech links, code, verified orgs</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>v1.0.0</span>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
