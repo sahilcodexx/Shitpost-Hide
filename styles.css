@@ -263,6 +263,34 @@ body {
   font-size: 13px;
 }
 
+.api-select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  margin: 8px 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.api-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+#apiEndpoint {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  margin: 8px 0;
+  font-size: 13px;
+}
+
 .btn-row {
   display: flex;
   gap: 8px;

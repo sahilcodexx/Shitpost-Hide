@@ -51,9 +51,17 @@
       </section>
 
       <section class="ai-section">
-        <h2>Gemini AI Integration</h2>
-        <p class="blacklist-description">Enter your Gemini API Key for AI-powered filtering</p>
-        <input type="password" id="geminiApiKeyInput" placeholder="Enter Gemini API Key" />
+        <h2>AI Integration</h2>
+        <p class="blacklist-description">Select provider and enter API key (Gemini is free)</p>
+        <select id="apiProvider" class="api-select">
+          <option value="gemini">Google Gemini (Free)</option>
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic Claude</option>
+          <option value="groq">Groq</option>
+          <option value="custom">Custom Endpoint</option>
+        </select>
+        <input type="password" id="geminiApiKeyInput" placeholder="Enter API Key" />
+        <input type="text" id="apiEndpoint" placeholder="Custom API Endpoint URL (if Custom)" style="display:none;" />
         <div class="btn-row">
           <button class="save-btn" id="saveApiKey">Save API Key</button>
           <button class="save-btn secondary" id="testApiKey">Test</button>
